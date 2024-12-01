@@ -336,7 +336,279 @@ void AnalyzePattern(const int index,
                    const double &high[],
                    const double &low[],
                    const double &close[]) {
-    // Pattern analysis logic will be implemented here
+    if(index < 20) return; // Need enough bars for analysis
+    
+    // Get pattern type and properties
+    ENUM_PATTERN_TYPE pattern_type = GetPatternType(index);
+    bool is_bullish = IsPatternBullish(index);
+    double pattern_strength = CalculatePatternStrength(index);
+    
+    // Analyze pattern completion
+    if(IsPatternComplete(index)) {
+        // Check volume confirmation
+        if(IsVolumeConfirming(index, is_bullish)) {
+            pattern_strength *= 1.2; // Increase strength with volume confirmation
+        }
+        
+        // Check trend alignment
+        if(IsTrendAligned(index, is_bullish)) {
+            pattern_strength *= 1.1; // Increase strength with trend alignment
+        }
+        
+        // Check support/resistance levels
+        if(IsLevelConfirming(index, is_bullish)) {
+            pattern_strength *= 1.1; // Increase strength with level confirmation
+        }
+        
+        // Store analysis results
+        BufferSignalStrength[index] = pattern_strength;
+    }
+}
+
+// Get pattern type
+ENUM_PATTERN_TYPE GetPatternType(const int index) {
+    // Check pattern buffers to determine type
+    if(BufferPatternHigh[index] != EMPTY_VALUE) {
+        // Analyze pattern characteristics
+        double pattern_height = BufferPatternHigh[index] - BufferPatternLow[index];
+        double pattern_width = 20; // Default pattern width
+        double slope = pattern_height / pattern_width;
+        
+        // Determine pattern type based on characteristics
+        if(slope > 0.001) {
+            return PATTERN_CHANNEL_ASC;
+        }
+        else if(slope < -0.001) {
+            return PATTERN_CHANNEL_DESC;
+        }
+        else {
+            return PATTERN_CHANNEL_HORZ;
+        }
+    }
+    
+    return PATTERN_FLAG; // Default to flag pattern
+}
+
+// Check if pattern is bullish
+bool IsPatternBullish(const int index) {
+    if(index < 20) return false;
+    
+    // Calculate trend direction
+    double start_price = (high[index-20] + low[index-20]) / 2;
+    double end_price = (high[index] + low[index]) / 2;
+    
+    return end_price > start_price;
+}
+
+// Calculate pattern strength
+double CalculatePatternStrength(const int index) {
+    if(index < 20) return 0;
+    
+    double strength = 0;
+    
+    // Check pattern size
+    double pattern_height = BufferPatternHigh[index] - BufferPatternLow[index];
+    double avg_range = 0;
+    
+    for(int i = index-20; i <= index; i++) {
+        avg_range += high[i] - low[i];
+    }
+    avg_range /= 21;
+    
+    // Pattern should be significant compared to average range
+    if(pattern_height > avg_range * 2) {
+        strength += 30;
+    }
+    else if(pattern_height > avg_range) {
+        strength += 20;
+    }
+    
+    // Check pattern symmetry
+    double symmetry = CalculatePatternSymmetry(index);
+    strength += symmetry * 30;
+    
+    // Check pattern clarity
+    double clarity = CalculatePatternClarity(index);
+    strength += clarity * 40;
+    
+    return MathMin(strength, 100);
+}
+
+// Calculate pattern symmetry
+double CalculatePatternSymmetry(const int index) {
+    if(index < 20) return 0;
+    
+    double symmetry = 1.0;
+    double left_sum = 0;
+    double right_sum = 0;
+    int mid_point = index - 10;
+    
+    // Compare left and right sides of pattern
+    for(int i = 0; i < 10; i++) {
+        left_sum += MathAbs(high[mid_point-i] - low[mid_point-i]);
+        right_sum += MathAbs(high[mid_point+i] - low[mid_point+i]);
+    }
+    
+    // Calculate symmetry ratio
+    if(left_sum > 0 && right_sum > 0) {
+        double ratio = MathMin(left_sum, right_sum) / MathMax(left_sum, right_sum);
+        symmetry *= ratio;
+    }
+    
+    return symmetry;
+}
+
+// Calculate pattern clarity
+double CalculatePatternClarity(const int index) {
+    if(index < 20) return 0;
+    
+    double clarity = 1.0;
+    double noise = 0;
+    
+    // Calculate noise in pattern
+    for(int i = index-19; i <= index; i++) {
+        double body = MathAbs(open[i] - close[i]);
+        double shadow = (high[i] - low[i]) - body;
+        noise += shadow / (body > 0 ? body : Point());
+    }
+    
+    noise /= 20;
+    clarity = 1.0 - MathMin(noise / 10.0, 0.9); // Cap noise reduction at 90%
+    
+    return clarity;
+}
+
+// Check if pattern is complete
+bool IsPatternComplete(const int index) {
+    if(index < 20) return false;
+    
+    // Check if pattern has formed completely
+    ENUM_PATTERN_TYPE pattern_type = GetPatternType(index);
+    
+    switch(pattern_type) {
+        case PATTERN_FLAG:
+        case PATTERN_PENNANT:
+            return IsPatternBreakout(index);
+            
+        case PATTERN_CHANNEL_ASC:
+        case PATTERN_CHANNEL_DESC:
+        case PATTERN_CHANNEL_HORZ:
+            return HasChannelTouches(index);
+            
+        case PATTERN_TRIANGLE_ASC:
+        case PATTERN_TRIANGLE_DESC:
+        case PATTERN_TRIANGLE_SYM:
+            return HasTriangleConvergence(index);
+            
+        default:
+            return false;
+    }
+}
+
+// Check for pattern breakout
+bool IsPatternBreakout(const int index) {
+    if(index < 20) return false;
+    
+    bool is_bullish = IsPatternBullish(index);
+    double breakout_level = is_bullish ? BufferPatternHigh[index] : BufferPatternLow[index];
+    
+    // Check if price has broken out of pattern
+    if(is_bullish) {
+        return close[index] > breakout_level;
+    }
+    else {
+        return close[index] < breakout_level;
+    }
+}
+
+// Check for sufficient channel touches
+bool HasChannelTouches(const int index) {
+    if(index < 20) return false;
+    
+    int touches = 0;
+    double upper_level = BufferPatternHigh[index];
+    double lower_level = BufferPatternLow[index];
+    
+    // Count touches of channel boundaries
+    for(int i = index-19; i <= index; i++) {
+        if(MathAbs(high[i] - upper_level) <= Point() * 10 ||
+           MathAbs(low[i] - lower_level) <= Point() * 10) {
+            touches++;
+        }
+    }
+    
+    return touches >= 3; // Require at least 3 touches
+}
+
+// Check for triangle convergence
+bool HasTriangleConvergence(const int index) {
+    if(index < 20) return false;
+    
+    double start_height = BufferPatternHigh[index-19] - BufferPatternLow[index-19];
+    double end_height = BufferPatternHigh[index] - BufferPatternLow[index];
+    
+    // Check if triangle is converging
+    return end_height < start_height * 0.7; // At least 30% convergence
+}
+
+// Check volume confirmation
+bool IsVolumeConfirming(const int index, const bool is_bullish) {
+    if(index < 20) return false;
+    
+    // Calculate average volume
+    double avg_volume = 0;
+    for(int i = index-19; i < index; i++) {
+        avg_volume += Volume[i];
+    }
+    avg_volume /= 19;
+    
+    // Check if current volume confirms the pattern
+    if(is_bullish) {
+        return Volume[index] > avg_volume * 1.5 && close[index] > open[index];
+    }
+    else {
+        return Volume[index] > avg_volume * 1.5 && close[index] < open[index];
+    }
+}
+
+// Check trend alignment
+bool IsTrendAligned(const int index, const bool is_bullish) {
+    if(index < 50) return false;
+    
+    // Calculate longer-term trend
+    double ma_fast = iMA(NULL, 0, 20, 0, MODE_SMA, PRICE_CLOSE, index);
+    double ma_slow = iMA(NULL, 0, 50, 0, MODE_SMA, PRICE_CLOSE, index);
+    
+    if(is_bullish) {
+        return ma_fast > ma_slow;
+    }
+    else {
+        return ma_fast < ma_slow;
+    }
+}
+
+// Check support/resistance confirmation
+bool IsLevelConfirming(const int index, const bool is_bullish) {
+    if(index < 20) return false;
+    
+    double level = is_bullish ? BufferPatternLow[index] : BufferPatternHigh[index];
+    int touches = 0;
+    
+    // Count touches of support/resistance level
+    for(int i = index-19; i <= index; i++) {
+        if(is_bullish) {
+            if(MathAbs(low[i] - level) <= Point() * 10) {
+                touches++;
+            }
+        }
+        else {
+            if(MathAbs(high[i] - level) <= Point() * 10) {
+                touches++;
+            }
+        }
+    }
+    
+    return touches >= 2; // Require at least 2 touches
 }
 
 //+------------------------------------------------------------------+
