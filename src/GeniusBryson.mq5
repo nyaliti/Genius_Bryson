@@ -149,8 +149,182 @@ bool DetectPatterns(const int index,
                    const double &high[],
                    const double &low[],
                    const double &close[]) {
-    // Pattern detection logic will be implemented here
-    return false;
+    bool pattern_found = false;
+    
+    // Check if we have enough bars for pattern detection
+    if(index < InpPatternBars) return false;
+    
+    // Flag Pattern Detection
+    bool is_bullish;
+    if(DetectFlag(index, rates_total, high, low, close, is_bullish)) {
+        pattern_found = true;
+        DrawFlagPattern(index, is_bullish);
+        BufferPatternHigh[index] = high[index];
+        BufferPatternLow[index] = low[index];
+    }
+    
+    // Channel Pattern Detection
+    ENUM_PATTERN_TYPE channel_type;
+    if(DetectChannel(index, rates_total, high, low, close, channel_type)) {
+        pattern_found = true;
+        DrawChannelPattern(index, channel_type);
+        BufferPatternHigh[index] = high[index];
+        BufferPatternLow[index] = low[index];
+    }
+    
+    // Triangle Pattern Detection
+    ENUM_PATTERN_TYPE triangle_type;
+    if(DetectTriangle(index, rates_total, high, low, close, triangle_type)) {
+        pattern_found = true;
+        DrawTrianglePattern(index, triangle_type);
+        BufferPatternHigh[index] = high[index];
+        BufferPatternLow[index] = low[index];
+    }
+    
+    // Head and Shoulders Pattern Detection
+    bool is_inverse;
+    if(DetectHeadAndShoulders(index, rates_total, high, low, close, is_inverse)) {
+        pattern_found = true;
+        DrawHeadAndShouldersPattern(index, is_inverse);
+        BufferPatternHigh[index] = high[index];
+        BufferPatternLow[index] = low[index];
+    }
+    
+    // Double/Triple Top/Bottom Detection
+    ENUM_PATTERN_TYPE top_bottom_type;
+    if(DetectTopBottom(index, rates_total, high, low, close, top_bottom_type)) {
+        pattern_found = true;
+        DrawTopBottomPattern(index, top_bottom_type);
+        BufferPatternHigh[index] = high[index];
+        BufferPatternLow[index] = low[index];
+    }
+    
+    return pattern_found;
+}
+
+// Pattern Drawing Functions
+void DrawFlagPattern(const int index, const bool is_bullish) {
+    string name = "GeniusBryson_Flag_" + TimeToString(Time[index]);
+    color pattern_color = is_bullish ? clrGreen : clrRed;
+    
+    // Draw flag pole
+    ObjectCreate(0, name + "_Pole", OBJ_TREND, 0,
+                Time[index-20], Low[index-20],
+                Time[index], High[index]);
+    ObjectSetInteger(0, name + "_Pole", OBJPROP_COLOR, pattern_color);
+    ObjectSetInteger(0, name + "_Pole", OBJPROP_WIDTH, 2);
+    
+    // Draw flag channel
+    ObjectCreate(0, name + "_Upper", OBJ_TREND, 0,
+                Time[index-10], High[index-10],
+                Time[index], High[index]);
+    ObjectCreate(0, name + "_Lower", OBJ_TREND, 0,
+                Time[index-10], Low[index-10],
+                Time[index], Low[index]);
+    ObjectSetInteger(0, name + "_Upper", OBJPROP_COLOR, pattern_color);
+    ObjectSetInteger(0, name + "_Lower", OBJPROP_COLOR, pattern_color);
+}
+
+void DrawChannelPattern(const int index, const ENUM_PATTERN_TYPE channel_type) {
+    string name = "GeniusBryson_Channel_" + TimeToString(Time[index]);
+    color pattern_color = InpPatternColor;
+    
+    // Draw channel lines
+    ObjectCreate(0, name + "_Upper", OBJ_TREND, 0,
+                Time[index-20], High[index-20],
+                Time[index], High[index]);
+    ObjectCreate(0, name + "_Lower", OBJ_TREND, 0,
+                Time[index-20], Low[index-20],
+                Time[index], Low[index]);
+    ObjectSetInteger(0, name + "_Upper", OBJPROP_COLOR, pattern_color);
+    ObjectSetInteger(0, name + "_Lower", OBJPROP_COLOR, pattern_color);
+}
+
+void DrawTrianglePattern(const int index, const ENUM_PATTERN_TYPE triangle_type) {
+    string name = "GeniusBryson_Triangle_" + TimeToString(Time[index]);
+    color pattern_color = InpPatternColor;
+    
+    // Draw triangle lines based on type
+    switch(triangle_type) {
+        case PATTERN_TRIANGLE_ASC:
+            ObjectCreate(0, name + "_Lower", OBJ_TREND, 0,
+                       Time[index-20], Low[index-20],
+                       Time[index], Low[index]);
+            ObjectCreate(0, name + "_Upper", OBJ_TREND, 0,
+                       Time[index-20], High[index-20],
+                       Time[index], High[index-20]);
+            break;
+            
+        case PATTERN_TRIANGLE_DESC:
+            ObjectCreate(0, name + "_Upper", OBJ_TREND, 0,
+                       Time[index-20], High[index-20],
+                       Time[index], High[index]);
+            ObjectCreate(0, name + "_Lower", OBJ_TREND, 0,
+                       Time[index-20], Low[index-20],
+                       Time[index], Low[index-20]);
+            break;
+            
+        case PATTERN_TRIANGLE_SYM:
+            ObjectCreate(0, name + "_Upper", OBJ_TREND, 0,
+                       Time[index-20], High[index-20],
+                       Time[index], (High[index] + Low[index])/2);
+            ObjectCreate(0, name + "_Lower", OBJ_TREND, 0,
+                       Time[index-20], Low[index-20],
+                       Time[index], (High[index] + Low[index])/2);
+            break;
+    }
+    
+    ObjectSetInteger(0, name + "_Upper", OBJPROP_COLOR, pattern_color);
+    ObjectSetInteger(0, name + "_Lower", OBJPROP_COLOR, pattern_color);
+}
+
+void DrawHeadAndShouldersPattern(const int index, const bool is_inverse) {
+    string name = "GeniusBryson_HS_" + TimeToString(Time[index]);
+    color pattern_color = InpPatternColor;
+    
+    // Draw neckline
+    ObjectCreate(0, name + "_Neckline", OBJ_TREND, 0,
+                Time[index-20], is_inverse ? High[index-20] : Low[index-20],
+                Time[index], is_inverse ? High[index] : Low[index]);
+    ObjectSetInteger(0, name + "_Neckline", OBJPROP_COLOR, pattern_color);
+    
+    // Draw head and shoulders points
+    for(int i = 0; i < 3; i++) {
+        ObjectCreate(0, name + "_Point" + IntegerToString(i), OBJ_ARROW,
+                    0, Time[index-15+i*5], 
+                    is_inverse ? Low[index-15+i*5] : High[index-15+i*5]);
+        ObjectSetInteger(0, name + "_Point" + IntegerToString(i),
+                        OBJPROP_ARROWCODE, 159);
+        ObjectSetInteger(0, name + "_Point" + IntegerToString(i),
+                        OBJPROP_COLOR, pattern_color);
+    }
+}
+
+void DrawTopBottomPattern(const int index, const ENUM_PATTERN_TYPE pattern_type) {
+    string name = "GeniusBryson_TB_" + TimeToString(Time[index]);
+    color pattern_color = InpPatternColor;
+    
+    bool is_top = (pattern_type == PATTERN_DOUBLE_TOP || 
+                   pattern_type == PATTERN_TRIPLE_TOP);
+    int points = (pattern_type == PATTERN_DOUBLE_TOP || 
+                 pattern_type == PATTERN_DOUBLE_BOTTOM) ? 2 : 3;
+    
+    // Draw resistance/support line
+    ObjectCreate(0, name + "_Line", OBJ_TREND, 0,
+                Time[index-20], is_top ? High[index-20] : Low[index-20],
+                Time[index], is_top ? High[index] : Low[index]);
+    ObjectSetInteger(0, name + "_Line", OBJPROP_COLOR, pattern_color);
+    
+    // Draw pattern points
+    for(int i = 0; i < points; i++) {
+        ObjectCreate(0, name + "_Point" + IntegerToString(i), OBJ_ARROW,
+                    0, Time[index-15+i*5],
+                    is_top ? High[index-15+i*5] : Low[index-15+i*5]);
+        ObjectSetInteger(0, name + "_Point" + IntegerToString(i),
+                        OBJPROP_ARROWCODE, 159);
+        ObjectSetInteger(0, name + "_Point" + IntegerToString(i),
+                        OBJPROP_COLOR, pattern_color);
+    }
 }
 
 //+------------------------------------------------------------------+
