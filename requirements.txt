@@ -1,0 +1,45 @@
+# Core Dependencies
+MetaTrader5>=5.0.0     # MT5 Python integration
+numpy>=1.21.0          # Numerical computations
+pandas>=1.3.0          # Data manipulation and analysis
+ta-lib>=0.4.0          # Technical analysis library
+scikit-learn>=0.24.0   # Machine learning utilities
+tensorflow>=2.7.0      # Deep learning framework (for future AI features)
+
+# Development Tools
+pytest>=6.2.5          # Testing framework
+pytest-cov>=2.12.0     # Test coverage
+black>=21.5b2          # Code formatter
+flake8>=3.9.2          # Code linter
+mypy>=0.910            # Static type checker
+isort>=5.9.3           # Import sorter
+
+# Documentation
+Sphinx>=4.0.2          # Documentation generator
+sphinx-rtd-theme>=0.5.2 # Documentation theme
+myst-parser>=0.15.2    # Markdown support for Sphinx
+
+# Testing and Validation
+hypothesis>=6.14.3     # Property-based testing
+pytest-benchmark>=3.4.1 # Performance testing
+coverage>=5.5          # Code coverage tool
+
+# Development Utilities
+pre-commit>=2.15.0     # Git hooks manager
+tox>=3.24.0           # Test automation
+bump2version>=1.0.1    # Version management
+
+# Optional Dependencies
+matplotlib>=3.4.2      # Plotting and visualization
+seaborn>=0.11.1       # Statistical visualization
+plotly>=5.1.0         # Interactive visualizations
+jupyter>=1.0.0        # Notebook interface
+ipython>=7.26.0       # Enhanced Python shell
+
+# Performance Optimization
+numba>=0.53.1         # JIT compiler
+cython>=0.29.24       # C-extensions for Python
+pywin32>=301          # Windows API access (for MT5 integration)
+
+# Note: Some packages may require additional system dependencies.
+# Please refer to INSTALL.md for complete setup instructions.
