@@ -347,7 +347,127 @@ void DetectSupplyDemandZones(const int index,
                             const double &high[],
                             const double &low[],
                             const double &close[]) {
-    // Supply/Demand zone detection logic will be implemented here
+    if(index < 20) return; // Need enough bars for zone detection
+    
+    // Check for supply zone
+    if(IsSupplyZone(index, high, low, close)) {
+        BufferSupplyZone[index] = high[index];
+        DrawSupplyZone(index, high, low);
+    }
+    
+    // Check for demand zone
+    if(IsDemandZone(index, high, low, close)) {
+        BufferDemandZone[index] = low[index];
+        DrawDemandZone(index, high, low);
+    }
+}
+
+// Supply Zone Detection
+bool IsSupplyZone(const int index,
+                  const double &high[],
+                  const double &low[],
+                  const double &close[]) {
+    // Look for strong bearish move after a consolidation
+    double zone_high = high[index];
+    double zone_low = low[index];
+    
+    // Check previous candles for consolidation
+    double avg_range = 0;
+    for(int i = index-5; i < index; i++) {
+        avg_range += high[i] - low[i];
+    }
+    avg_range /= 5;
+    
+    // Check for strong move down
+    double move_size = high[index] - low[index+1];
+    if(move_size > avg_range * 2) {
+        // Verify zone hasn't been broken
+        for(int i = index+2; i < MathMin(index+20, Bars-1); i++) {
+            if(high[i] > zone_high) return false;
+        }
+        return true;
+    }
+    
+    return false;
+}
+
+// Demand Zone Detection
+bool IsDemandZone(const int index,
+                  const double &high[],
+                  const double &low[],
+                  const double &close[]) {
+    // Look for strong bullish move after a consolidation
+    double zone_high = high[index];
+    double zone_low = low[index];
+    
+    // Check previous candles for consolidation
+    double avg_range = 0;
+    for(int i = index-5; i < index; i++) {
+        avg_range += high[i] - low[i];
+    }
+    avg_range /= 5;
+    
+    // Check for strong move up
+    double move_size = high[index+1] - low[index];
+    if(move_size > avg_range * 2) {
+        // Verify zone hasn't been broken
+        for(int i = index+2; i < MathMin(index+20, Bars-1); i++) {
+            if(low[i] < zone_low) return false;
+        }
+        return true;
+    }
+    
+    return false;
+}
+
+// Draw Supply Zone
+void DrawSupplyZone(const int index,
+                    const double &high[],
+                    const double &low[]) {
+    string name = "GeniusBryson_Supply_" + TimeToString(Time[index]);
+    
+    // Draw zone rectangle
+    ObjectCreate(0, name, OBJ_RECTANGLE, 0,
+                Time[index], high[index],
+                Time[index+20], low[index]);
+    ObjectSetInteger(0, name, OBJPROP_COLOR, InpSupplyZoneColor);
+    ObjectSetInteger(0, name, OBJPROP_FILL, true);
+    ObjectSetInteger(0, name, OBJPROP_BACK, true);
+    ObjectSetInteger(0, name, OBJPROP_WIDTH, 1);
+    ObjectSetDouble(0, name, OBJPROP_TRANSPARENCY, 70);
+    
+    // Add zone label
+    string label_name = name + "_Label";
+    ObjectCreate(0, label_name, OBJ_TEXT, 0,
+                Time[index], high[index]);
+    ObjectSetString(0, label_name, OBJPROP_TEXT, "Supply Zone");
+    ObjectSetInteger(0, label_name, OBJPROP_COLOR, InpSupplyZoneColor);
+    ObjectSetInteger(0, label_name, OBJPROP_FONTSIZE, 8);
+}
+
+// Draw Demand Zone
+void DrawDemandZone(const int index,
+                    const double &high[],
+                    const double &low[]) {
+    string name = "GeniusBryson_Demand_" + TimeToString(Time[index]);
+    
+    // Draw zone rectangle
+    ObjectCreate(0, name, OBJ_RECTANGLE, 0,
+                Time[index], high[index],
+                Time[index+20], low[index]);
+    ObjectSetInteger(0, name, OBJPROP_COLOR, InpDemandZoneColor);
+    ObjectSetInteger(0, name, OBJPROP_FILL, true);
+    ObjectSetInteger(0, name, OBJPROP_BACK, true);
+    ObjectSetInteger(0, name, OBJPROP_WIDTH, 1);
+    ObjectSetDouble(0, name, OBJPROP_TRANSPARENCY, 70);
+    
+    // Add zone label
+    string label_name = name + "_Label";
+    ObjectCreate(0, label_name, OBJ_TEXT, 0,
+                Time[index], low[index]);
+    ObjectSetString(0, label_name, OBJPROP_TEXT, "Demand Zone");
+    ObjectSetInteger(0, label_name, OBJPROP_COLOR, InpDemandZoneColor);
+    ObjectSetInteger(0, label_name, OBJPROP_FONTSIZE, 8);
 }
 
 //+------------------------------------------------------------------+
