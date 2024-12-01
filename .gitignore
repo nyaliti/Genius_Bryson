@@ -1,0 +1,165 @@
+# MetaTrader Files
+*.ex4
+*.ex5
+*.mqh~
+*.mq4~
+*.mq5~
+*.log
+experts.dat
+tester/
+
+# Compiled files
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.dylib
+
+# IDE and Editor Files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.vs/
+*.user
+*.suo
+*.sln.docstates
+
+# Operating System Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Build and Debug Directories
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Python Environment
+venv/
+env/
+.env
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Testing
+.coverage
+htmlcov/
+.tox/
+.nox/
+.pytest_cache/
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# Distribution / Packaging
+dist/
+build/
+*.egg-info/
+*.egg
+
+# Documentation
+_build/
+_static/
+_templates/
+
+# Backup Files
+*.bak
+*.backup
+*.old
+*.orig
+*.tmp
+
+# Local Configuration
+config.local.ini
+settings.local.json
+
+# Cache Files
+.cache/
+*.cache
+
+# Temporary Files
+tmp/
+temp/
+
+# Project-specific ignores
+backtest_results/
+optimization_results/
+custom_indicators/
+presets/
+
+# Security (never commit these)
+*.key
+*.pem
+*.cert
+*.password
+secrets.yml
+credentials.json
+
+# Dependencies
+node_modules/
+jspm_packages/
+bower_components/
+
+# Logs and Databases
+*.log
+*.sql
+*.sqlite
+*.sqlite3
+*.db
+
+# Environment Variables
+.env
+.env.local
+.env.*.local
+.env.development
+.env.test
+.env.production
+
+# Editor directories and files
+.idea/
+*.sublime-workspace
+*.sublime-project
+.project
+.classpath
+.settings/
+*.code-workspace
+
+# OS generated files
+.directory
+.fuse_hidden*
+.Trash-*
+.nfs*
+
+# Misc
+*.zip
+*.tar.gz
+*.rar
+*.7z
+*.pdf
+*.doc
+*.docx
+*.xls
+*.xlsx
+*.csv
+!example.csv
+*.txt
+!requirements.txt
+!README.txt
