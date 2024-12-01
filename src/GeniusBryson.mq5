@@ -579,7 +579,261 @@ void GenerateSignals(const int index,
                     const double &high[],
                     const double &low[],
                     const double &close[]) {
-    // Signal generation logic will be implemented here
+    if(index < 20) return; // Need enough bars for signal generation
+    
+    // Initialize signal components
+    double signal_strength = 0;
+    string signal_rationale = "";
+    bool is_bullish = false;
+    int confluence_count = 0;
+    
+    // Check pattern signals
+    if(BufferPatternHigh[index] != EMPTY_VALUE) {
+        double pattern_signal = AnalyzePatternSignal(index, high, low, close, is_bullish);
+        if(pattern_signal > 0) {
+            signal_strength += pattern_signal;
+            signal_rationale += "Pattern: " + GetPatternDescription(index) + "\n";
+            confluence_count++;
+        }
+    }
+    
+    // Check zone signals
+    if(BufferSupplyZone[index] != EMPTY_VALUE || BufferDemandZone[index] != EMPTY_VALUE) {
+        double zone_signal = AnalyzeZoneSignal(index, high, low, close, is_bullish);
+        if(zone_signal > 0) {
+            signal_strength += zone_signal;
+            signal_rationale += "Zone: " + GetZoneDescription(index) + "\n";
+            confluence_count++;
+        }
+    }
+    
+    // Check Fibonacci signals
+    if(BufferFibLevels[index] != EMPTY_VALUE) {
+        double fib_signal = AnalyzeFibonacciSignal(index, high, low, close, is_bullish);
+        if(fib_signal > 0) {
+            signal_strength += fib_signal;
+            signal_rationale += "Fibonacci: " + GetFibonacciDescription(index) + "\n";
+            confluence_count++;
+        }
+    }
+    
+    // Generate signal if enough confluence
+    if(confluence_count >= 2 && signal_strength >= InpConfidenceThreshold) {
+        // Calculate signal type
+        ENUM_SIGNAL_TYPE signal_type;
+        if(is_bullish) {
+            signal_type = signal_strength >= 90 ? SIGNAL_STRONG_BUY : SIGNAL_MODERATE_BUY;
+        } else {
+            signal_type = signal_strength >= 90 ? SIGNAL_STRONG_SELL : SIGNAL_MODERATE_SELL;
+        }
+        
+        // Calculate entry, stop loss and take profit
+        double entry_price = close[index];
+        double stop_loss = CalculateStopLoss(index, is_bullish, high, low);
+        double take_profit = CalculateTakeProfit(entry_price, stop_loss, is_bullish);
+        
+        // Store signal values
+        BufferSignalStrength[index] = signal_strength;
+        BufferStopLoss[index] = stop_loss;
+        BufferTakeProfit[index] = take_profit;
+        
+        // Draw signal
+        DrawSignalMarker(index, signal_type, entry_price, stop_loss, take_profit);
+        
+        // Generate alert
+        GenerateSignalAlert(signal_type, entry_price, stop_loss, take_profit, signal_rationale);
+    }
+}
+
+// Analyze pattern signal
+double AnalyzePatternSignal(const int index,
+                           const double &high[],
+                           const double &low[],
+                           const double &close[],
+                           bool &is_bullish) {
+    double signal_strength = 0;
+    
+    // Check pattern completion
+    if(IsPatternComplete(index)) {
+        // Determine pattern direction
+        is_bullish = IsPatternBullish(index);
+        
+        // Calculate pattern strength
+        signal_strength = CalculatePatternStrength(index);
+        
+        // Check volume confirmation
+        if(IsVolumeConfirming(index, is_bullish)) {
+            signal_strength *= 1.2; // Increase strength with volume confirmation
+        }
+    }
+    
+    return signal_strength;
+}
+
+// Analyze zone signal
+double AnalyzeZoneSignal(const int index,
+                        const double &high[],
+                        const double &low[],
+                        const double &close[],
+                        bool &is_bullish) {
+    double signal_strength = 0;
+    
+    // Check for zone interaction
+    if(BufferSupplyZone[index] != EMPTY_VALUE) {
+        is_bullish = false;
+        signal_strength = CalculateZoneStrength(index, false);
+    }
+    else if(BufferDemandZone[index] != EMPTY_VALUE) {
+        is_bullish = true;
+        signal_strength = CalculateZoneStrength(index, true);
+    }
+    
+    return signal_strength;
+}
+
+// Analyze Fibonacci signal
+double AnalyzeFibonacciSignal(const int index,
+                             const double &high[],
+                             const double &low[],
+                             const double &close[],
+                             bool &is_bullish) {
+    double signal_strength = 0;
+    
+    // Check for Fibonacci level interaction
+    if(IsPriceAtFibLevel(index, close[index])) {
+        // Determine direction based on price action at Fibonacci level
+        is_bullish = close[index] > close[index-1];
+        signal_strength = CalculateFibonacciStrength(index);
+    }
+    
+    return signal_strength;
+}
+
+// Calculate stop loss level
+double CalculateStopLoss(const int index,
+                        const bool is_bullish,
+                        const double &high[],
+                        const double &low[]) {
+    double stop_loss = 0;
+    
+    if(is_bullish) {
+        // For buy signals, find recent low
+        stop_loss = low[index];
+        for(int i = 1; i < 10; i++) {
+            stop_loss = MathMin(stop_loss, low[index-i]);
+        }
+        // Add buffer
+        stop_loss -= 10 * Point();
+    }
+    else {
+        // For sell signals, find recent high
+        stop_loss = high[index];
+        for(int i = 1; i < 10; i++) {
+            stop_loss = MathMax(stop_loss, high[index-i]);
+        }
+        // Add buffer
+        stop_loss += 10 * Point();
+    }
+    
+    return stop_loss;
+}
+
+// Calculate take profit level
+double CalculateTakeProfit(const double entry_price,
+                          const double stop_loss,
+                          const bool is_bullish) {
+    double risk = MathAbs(entry_price - stop_loss);
+    double take_profit;
+    
+    if(is_bullish) {
+        take_profit = entry_price + risk * 2; // 1:2 risk/reward ratio
+    }
+    else {
+        take_profit = entry_price - risk * 2;
+    }
+    
+    return take_profit;
+}
+
+// Draw signal marker
+void DrawSignalMarker(const int index,
+                     const ENUM_SIGNAL_TYPE signal_type,
+                     const double entry_price,
+                     const double stop_loss,
+                     const double take_profit) {
+    string name = "GeniusBryson_Signal_" + TimeToString(Time[index]);
+    color signal_color;
+    
+    // Set color based on signal type
+    switch(signal_type) {
+        case SIGNAL_STRONG_BUY:
+            signal_color = clrLime;
+            break;
+        case SIGNAL_MODERATE_BUY:
+            signal_color = clrGreen;
+            break;
+        case SIGNAL_STRONG_SELL:
+            signal_color = clrRed;
+            break;
+        case SIGNAL_MODERATE_SELL:
+            signal_color = clrCrimson;
+            break;
+        default:
+            signal_color = clrGray;
+    }
+    
+    // Draw signal arrow
+    ObjectCreate(0, name + "_Arrow", OBJ_ARROW,0, Time[index], entry_price);
+    ObjectSetInteger(0, name + "_Arrow", OBJPROP_ARROWCODE,
+                    signal_type <= SIGNAL_NEUTRAL ? 233 : 234);
+    ObjectSetInteger(0, name + "_Arrow", OBJPROP_COLOR, signal_color);
+    
+    // Draw stop loss line
+    ObjectCreate(0, name + "_SL", OBJ_TREND, 0,
+                Time[index], stop_loss,
+                Time[index+10], stop_loss);
+    ObjectSetInteger(0, name + "_SL", OBJPROP_COLOR, clrRed);
+    ObjectSetInteger(0, name + "_SL", OBJPROP_STYLE, STYLE_DOT);
+    
+    // Draw take profit line
+    ObjectCreate(0, name + "_TP", OBJ_TREND, 0,
+                Time[index], take_profit,
+                Time[index+10], take_profit);
+    ObjectSetInteger(0, name + "_TP", OBJPROP_COLOR, clrGreen);
+    ObjectSetInteger(0, name + "_TP", OBJPROP_STYLE, STYLE_DOT);
+}
+
+// Generate signal alert
+void GenerateSignalAlert(const ENUM_SIGNAL_TYPE signal_type,
+                        const double entry_price,
+                        const double stop_loss,
+                        const double take_profit,
+                        const string rationale) {
+    string signal_text = "";
+    
+    switch(signal_type) {
+        case SIGNAL_STRONG_BUY:
+            signal_text = "Strong Buy";
+            break;
+        case SIGNAL_MODERATE_BUY:
+            signal_text = "Moderate Buy";
+            break;
+        case SIGNAL_STRONG_SELL:
+            signal_text = "Strong Sell";
+            break;
+        case SIGNAL_MODERATE_SELL:
+            signal_text = "Moderate Sell";
+            break;
+    }
+    
+    string alert_message = StringFormat("%s Signal\nEntry: %s\nStop Loss: %s\nTake Profit: %s\n\nRationale:\n%s",
+                                      signal_text,
+                                      DoubleToString(entry_price, _Digits),
+                                      DoubleToString(stop_loss, _Digits),
+                                      DoubleToString(take_profit, _Digits),
+                                      rationale);
+    
+    Alert(alert_message);
 }
 
 //+------------------------------------------------------------------+
