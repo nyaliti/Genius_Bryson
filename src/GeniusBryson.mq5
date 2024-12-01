@@ -477,7 +477,97 @@ void CalculateFibonacciLevels(const int index,
                              const int rates_total,
                              const double &high[],
                              const double &low[]) {
-    // Fibonacci calculation logic will be implemented here
+    if(index < 20) return; // Need enough bars for Fibonacci calculation
+    
+    // Find swing high and low points
+    double swing_high = high[index];
+    double swing_low = low[index];
+    int high_index = index;
+    int low_index = index;
+    
+    // Look back for swing points
+    for(int i = index; i > MathMax(0, index - 20); i--) {
+        if(high[i] > swing_high) {
+            swing_high = high[i];
+            high_index = i;
+        }
+        if(low[i] < swing_low) {
+            swing_low = low[i];
+            low_index = i;
+        }
+    }
+    
+    // Determine trend direction
+    bool is_uptrend = low_index > high_index;
+    
+    // Calculate Fibonacci levels
+    double price_range = swing_high - swing_low;
+    double fib_levels[] = {-0.618, 0.0, 0.5, 0.618, 1.0, 1.618};
+    double fib_prices[];
+    ArrayResize(fib_prices, ArraySize(fib_levels));
+    
+    // Calculate price levels
+    for(int i = 0; i < ArraySize(fib_levels); i++) {
+        if(is_uptrend) {
+            fib_prices[i] = swing_low + price_range * (1 - fib_levels[i]);
+        } else {
+            fib_prices[i] = swing_high - price_range * fib_levels[i];
+        }
+        
+        // Store in buffer for main levels
+        if(fib_levels[i] >= 0 && fib_levels[i] <= 1) {
+            BufferFibLevels[index] = fib_prices[i];
+        }
+    }
+    
+    // Draw Fibonacci levels
+    DrawFibonacciLevels(index, high_index, low_index, fib_prices, is_uptrend);
+}
+
+// Draw Fibonacci Levels
+void DrawFibonacciLevels(const int index,
+                         const int high_index,
+                         const int low_index,
+                         const double &fib_prices[],
+                         const bool is_uptrend) {
+    string name = "GeniusBryson_Fib_" + TimeToString(Time[index]);
+    
+    // Draw Fibonacci lines
+    for(int i = 0; i < ArraySize(fib_prices); i++) {
+        string level_name = name + "_" + DoubleToString(fib_prices[i], _Digits);
+        
+        // Create line object
+        ObjectCreate(0, level_name, OBJ_TREND, 0,
+                    Time[MathMin(high_index, low_index)], fib_prices[i],
+                    Time[index], fib_prices[i]);
+        
+        // Set line properties
+        ObjectSetInteger(0, level_name, OBJPROP_COLOR, InpFibColor);
+        ObjectSetInteger(0, level_name, OBJPROP_STYLE, STYLE_DOT);
+        ObjectSetInteger(0, level_name, OBJPROP_WIDTH, 1);
+        
+        // Add level label
+        string label_name = level_name + "_Label";
+        ObjectCreate(0, label_name, OBJ_TEXT, 0,
+                    Time[index], fib_prices[i]);
+        ObjectSetString(0, label_name, OBJPROP_TEXT,
+                       DoubleToString(fib_prices[i], _Digits));
+        ObjectSetInteger(0, label_name, OBJPROP_COLOR, InpFibColor);
+        ObjectSetInteger(0, label_name, OBJPROP_FONTSIZE, 8);
+    }
+    
+    // Draw highlighted zone between 0.5 and 0.618
+    string zone_name = name + "_Zone";
+    int level_50 = 2;  // Index of 0.5 level
+    int level_618 = 3; // Index of 0.618 level
+    
+    ObjectCreate(0, zone_name, OBJ_RECTANGLE, 0,
+                Time[MathMin(high_index, low_index)], fib_prices[level_50],
+                Time[index], fib_prices[level_618]);
+    ObjectSetInteger(0, zone_name, OBJPROP_COLOR, InpFibColor);
+    ObjectSetInteger(0, zone_name, OBJPROP_FILL, true);
+    ObjectSetInteger(0, zone_name, OBJPROP_BACK, true);
+    ObjectSetDouble(0, zone_name, OBJPROP_TRANSPARENCY, 70);
 }
 
 //+------------------------------------------------------------------+
