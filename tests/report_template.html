@@ -122,6 +122,48 @@
             background-color: #007bff;
             transition: width 0.3s ease;
         }
+
+        pre {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        footer {
+            margin-top: 50px;
+            padding: 20px;
+            text-align: center;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+
+        .expanded {
+            max-height: none;
+            cursor: pointer;
+        }
+
+        .test-card:not(.expanded) {
+            max-height: 200px;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .summary {
+                grid-template-columns: 1fr;
+            }
+            
+            .test-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .performance-metrics {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
@@ -241,7 +283,6 @@
     </footer>
 
     <script>
-        // JavaScript for interactive features
         document.addEventListener('DOMContentLoaded', function() {
             // Add click handlers for expandable sections
             document.querySelectorAll('.test-card').forEach(card => {
@@ -250,15 +291,11 @@
                 });
             });
 
-            // Initialize charts
-            initializeCharts();
+            // Initialize charts if any chart library is included
+            if (typeof initializeCharts === 'function') {
+                initializeCharts();
+            }
         });
-
-        function initializeCharts() {
-            // Chart initialization code here
-            // This would be replaced with actual chart library code
-            // Example using Chart.js or similar
-        }
     </script>
 </body>
 </html>
