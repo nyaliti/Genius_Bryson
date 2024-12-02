@@ -149,85 +149,26 @@ int OnCalculate(const int rates_total,
     return(rates_total);
 }
 
-// Detect Supply and Demand Zones
-void DetectSupplyDemandZones(const int index,
-                             const int rates_total,
-                             const double &high[],
-                             const double &low[],
-                             const double &close[]) {
-    // Logic to identify major and minor supply/demand zones
-    double recentHigh = high[index];
-    double recentLow = low[index];
-    
-    // Check for significant price levels
-    for(int i = index - 1; i >= MathMax(0, index - 20); i--) {
-        if(high[i] > recentHigh) {
-            recentHigh = high[i];
-            BufferSupplyZone[index] = recentHigh; // Mark as supply zone
-        }
-        if(low[i] < recentLow) {
-            recentLow = low[i];
-            BufferDemandZone[index] = recentLow; // Mark as demand zone
-        }
-    }
-    
-    // Draw supply and demand zones
-    if(BufferSupplyZone[index] != EMPTY_VALUE) {
-        DrawSupplyZone(index, BufferSupplyZone[index]);
-    }
-    if(BufferDemandZone[index] != EMPTY_VALUE) {
-        DrawDemandZone(index, BufferDemandZone[index]);
-    }
-}
-
-// Draw Supply Zone
-void DrawSupplyZone(const int index, const double price) {
-    string name = "SupplyZone_" + TimeToString(Time[index]);
-    ObjectCreate(0, name, OBJ_RECTANGLE, 0,
-                Time[index], price,
-                Time[index + 1], price + 10 * Point());
-    ObjectSetInteger(0, name, OBJPROP_COLOR, InpSupplyZoneColor);
-    ObjectSetInteger(0, name, OBJPROP_FILL, true);
-}
-
-// Draw Demand Zone
-void DrawDemandZone(const int index, const double price) {
-    string name = "DemandZone_" + TimeToString(Time[index]);
-    ObjectCreate(0, name, OBJ_RECTANGLE, 0,
-                Time[index], price - 10 * Point(),
-                Time[index + 1], price);
-    ObjectSetInteger(0, name, OBJPROP_COLOR, InpDemandZoneColor);
-    ObjectSetInteger(0, name, OBJPROP_FILL, true);
-}
-
-// Draw Order Blocks
-void DrawOrderBlocks(const int index,
-                     const double &high[],
-                     const double &low[]) {
-    // Logic to identify and draw order blocks on the chart
-    double orderBlockHigh = high[index];
-    double orderBlockLow = low[index];
-    
-    // Example logic for drawing an order block
-    string name = "OrderBlock_" + TimeToString(Time[index]);
-    ObjectCreate(0, name, OBJ_RECTANGLE, 0,
-                Time[index], orderBlockLow,
-                Time[index + 1], orderBlockHigh);
-    ObjectSetInteger(0, name, OBJPROP_COLOR, InpOrderBlockColor);
-    ObjectSetInteger(0, name, OBJPROP_FILL, true);
-    
-    // Provide insights about price behavior in the order block
-    string insight = "Price may reverse or break in this zone due to market structure.";
-    ObjectCreate(0, name + "_Note", OBJ_TEXT, 0,
-                Time[index], orderBlockHigh);
-    ObjectSetString(0, name + "_Note", OBJPROP_TEXT, insight);
-    ObjectSetInteger(0, name + "_Note", OBJPROP_COLOR, clrWhite);
-}
-
 // Detect Patterns
 bool DetectPatterns(const int index, const int rates_total, const double &open[], const double &high[], const double &low[], const double &close[]) {
     // Logic to identify various chart patterns
     // Implement detection for flags, triangles, head and shoulders, etc.
+    
+    // Example logic for detecting a flag pattern
+    if (DetectFlagPattern(index, high, low)) {
+        // Logic for flag pattern detected
+        return true;
+    }
+    
+    // Implement other pattern detections...
+    
+    return false; // Placeholder return
+}
+
+// Example function for detecting a flag pattern
+bool DetectFlagPattern(const int index, const double &high[], const double &low[]) {
+    // Logic to identify a flag pattern based on price action
+    // This is a placeholder for the actual detection logic
     return false; // Placeholder return
 }
 
