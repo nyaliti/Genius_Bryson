@@ -154,9 +154,39 @@ bool DetectPatterns(const int index, const int rates_total, const double &open[]
     // Logic to identify various chart patterns
     // Implement detection for flags, triangles, head and shoulders, etc.
     
-    // Example logic for detecting a flag pattern
+    // Detect Flag Pattern
     if (DetectFlagPattern(index, high, low)) {
         // Logic for flag pattern detected
+        return true;
+    }
+    
+    // Detect Pennant Pattern
+    if (DetectPennantPattern(index, high, low)) {
+        // Logic for pennant pattern detected
+        return true;
+    }
+    
+    // Detect Ascending/Descending Channels
+    if (DetectChannelPattern(index, high, low)) {
+        // Logic for channel pattern detected
+        return true;
+    }
+    
+    // Detect Triangles
+    if (DetectTrianglePattern(index, high, low)) {
+        // Logic for triangle pattern detected
+        return true;
+    }
+    
+    // Detect Head and Shoulders
+    if (DetectHeadAndShouldersPattern(index, high, low)) {
+        // Logic for head and shoulders detected
+        return true;
+    }
+    
+    // Detect Double/Triple Tops and Bottoms
+    if (DetectTopBottomPattern(index, high, low)) {
+        // Logic for top/bottom pattern detected
         return true;
     }
     
@@ -168,6 +198,41 @@ bool DetectPatterns(const int index, const int rates_total, const double &open[]
 // Example function for detecting a flag pattern
 bool DetectFlagPattern(const int index, const double &high[], const double &low[]) {
     // Logic to identify a flag pattern based on price action
+    // This is a placeholder for the actual detection logic
+    return false; // Placeholder return
+}
+
+// Example function for detecting a pennant pattern
+bool DetectPennantPattern(const int index, const double &high[], const double &low[]) {
+    // Logic to identify a pennant pattern based on price action
+    // This is a placeholder for the actual detection logic
+    return false; // Placeholder return
+}
+
+// Example function for detecting a channel pattern
+bool DetectChannelPattern(const int index, const double &high[], const double &low[]) {
+    // Logic to identify ascending/descending channels based on price action
+    // This is a placeholder for the actual detection logic
+    return false; // Placeholder return
+}
+
+// Example function for detecting a triangle pattern
+bool DetectTrianglePattern(const int index, const double &high[], const double &low[]) {
+    // Logic to identify triangle patterns based on price action
+    // This is a placeholder for the actual detection logic
+    return false; // Placeholder return
+}
+
+// Example function for detecting head and shoulders pattern
+bool DetectHeadAndShouldersPattern(const int index, const double &high[], const double &low[]) {
+    // Logic to identify head and shoulders patterns based on price action
+    // This is a placeholder for the actual detection logic
+    return false; // Placeholder return
+}
+
+// Example function for detecting double/triple tops and bottoms
+bool DetectTopBottomPattern(const int index, const double &high[], const double &low[]) {
+    // Logic to identify double/triple tops and bottoms based on price action
     // This is a placeholder for the actual detection logic
     return false; // Placeholder return
 }
