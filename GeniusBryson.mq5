@@ -150,7 +150,48 @@ void DetectSupplyDemandZones(const int index,
                              const double &low[],
                              const double &close[]) {
     // Logic to identify major and minor supply/demand zones
-    // This will involve checking for significant price levels and drawing them on the chart
+    double recentHigh = high[index];
+    double recentLow = low[index];
+    
+    // Check for significant price levels
+    for(int i = index - 1; i >= MathMax(0, index - 20); i--) {
+        if(high[i] > recentHigh) {
+            recentHigh = high[i];
+            BufferSupplyZone[index] = recentHigh; // Mark as supply zone
+        }
+        if(low[i] < recentLow) {
+            recentLow = low[i];
+            BufferDemandZone[index] = recentLow; // Mark as demand zone
+        }
+    }
+    
+    // Draw supply and demand zones
+    if(BufferSupplyZone[index] != EMPTY_VALUE) {
+        DrawSupplyZone(index, BufferSupplyZone[index]);
+    }
+    if(BufferDemandZone[index] != EMPTY_VALUE) {
+        DrawDemandZone(index, BufferDemandZone[index]);
+    }
+}
+
+// Draw Supply Zone
+void DrawSupplyZone(const int index, const double price) {
+    string name = "SupplyZone_" + TimeToString(Time[index]);
+    ObjectCreate(0, name, OBJ_RECTANGLE, 0,
+                Time[index], price,
+                Time[index + 1], price + 10 * Point());
+    ObjectSetInteger(0, name, OBJPROP_COLOR, InpSupplyZoneColor);
+    ObjectSetInteger(0, name, OBJPROP_FILL, true);
+}
+
+// Draw Demand Zone
+void DrawDemandZone(const int index, const double price) {
+    string name = "DemandZone_" + TimeToString(Time[index]);
+    ObjectCreate(0, name, OBJ_RECTANGLE, 0,
+                Time[index], price - 10 * Point(),
+                Time[index + 1], price);
+    ObjectSetInteger(0, name, OBJPROP_COLOR, InpDemandZoneColor);
+    ObjectSetInteger(0, name, OBJPROP_FILL, true);
 }
 
 // Draw Order Blocks
