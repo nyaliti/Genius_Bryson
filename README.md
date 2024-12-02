@@ -4,12 +4,14 @@
 Genius Bryson is an automated assistant for MetaTrader 5 (MT5) designed to help forex traders analyze charts with sophisticated logic and insights. The system aims to reduce emotional bias in trading decisions by providing clear analysis and recommendations.
 
 ## Features
-- Identify and draw various chart patterns (flags, pennants, triangles, etc.).
-- Recognize candlestick formations at support/resistance zones (doji, hammer, engulfing patterns).
-- Draw Fibonacci retracement levels and highlight key zones.
-- Provide buy/sell insights with suggested stop-loss (SL) and take-profit (TP) levels.
-- Customize chart colors for a professional appearance.
-- Identify support and resistance zones, including breakout/rejection points.
+- **Chart Pattern Recognition**: Identifies and draws various chart patterns, including flags, pennants, triangles, and more.
+- **Candlestick Pattern Recognition**: Recognizes specific candlestick formations at support/resistance zones (doji, hammer, engulfing patterns).
+- **Fibonacci Retracement**: Draws Fibonacci levels (0, 0.5, 0.618, 1, 1.618, -0.618) and highlights the zone between 0.5 and 0.618.
+- **Supply and Demand Zones**: Identifies and draws major and minor supply and demand zones on the chart.
+- **Order Blocks**: Draws order blocks and provides insights about price behavior in those zones.
+- **Insights and Recommendations**: Provides buy/sell insights with reasons, including suggested stop-loss (SL) and take-profit (TP) levels.
+- **Visual Enhancements**: Customizes chart colors (background, foreground, candlestick) for a professional appearance.
+- **User-Friendly Interface**: Ensures the system is straightforward for users while maintaining complex underlying logic.
 
 ## Installation
 Instructions for installing the system will be provided in INSTALL.md.
