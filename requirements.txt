@@ -1,0 +1,10 @@
+# Requirements for Genius Bryson
+
+# List any required libraries or dependencies here
+# For example:
+# - numpy
+# - pandas
+# - matplotlib
+
+# Note: Since this is an MT5 indicator, specific dependencies may not be required.
+# However, if you plan to integrate AI/ML features in the future, consider adding relevant libraries.
