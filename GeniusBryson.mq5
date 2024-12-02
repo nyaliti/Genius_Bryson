@@ -47,6 +47,7 @@ input color    InpSupplyZoneColor = clrPink;    // Supply Zone Color
 input color    InpDemandZoneColor = clrLightGreen; // Demand Zone Color
 input color    InpPatternColor = clrBlue;    // Pattern Lines Color
 input color    InpFibColor = clrGold;        // Fibonacci Lines Color
+input color    InpOrderBlockColor = clrOrange; // Order Block Color
 
 // Buffers for indicators
 double BufferSupplyZone[];
@@ -83,6 +84,7 @@ int OnInit() {
     PlotIndexSetInteger(1, PLOT_LINE_COLOR, InpDemandZoneColor);
     PlotIndexSetInteger(2, PLOT_LINE_COLOR, InpPatternColor);
     PlotIndexSetInteger(4, PLOT_LINE_COLOR, InpFibColor);
+    PlotIndexSetInteger(8, PLOT_LINE_COLOR, InpOrderBlockColor);
     
     return(INIT_SUCCEEDED);
 }
@@ -135,6 +137,9 @@ int OnCalculate(const int rates_total,
         if(InpShowFibLevels) {
             CalculateFibonacciLevels(i, rates_total, high, low);
         }
+        
+        // Draw order blocks
+        DrawOrderBlocks(i, high, low);
         
         // Generate trading signals
         GenerateSignals(i, rates_total, open, high, low, close);
@@ -200,6 +205,16 @@ void DrawOrderBlocks(const int index,
                      const double &low[]) {
     // Logic to identify and draw order blocks on the chart
     // This will include providing insights about price behavior in those zones
+    double orderBlockHigh = high[index];
+    double orderBlockLow = low[index];
+    
+    // Example logic for drawing an order block
+    string name = "OrderBlock_" + TimeToString(Time[index]);
+    ObjectCreate(0, name, OBJ_RECTANGLE, 0,
+                Time[index], orderBlockLow,
+                Time[index + 1], orderBlockHigh);
+    ObjectSetInteger(0, name, OBJPROP_COLOR, InpOrderBlockColor);
+    ObjectSetInteger(0, name, OBJPROP_FILL, true);
 }
 
 // Additional functions for detecting patterns and generating signals will be implemented here...
