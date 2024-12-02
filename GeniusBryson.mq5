@@ -204,7 +204,6 @@ void DrawOrderBlocks(const int index,
                      const double &high[],
                      const double &low[]) {
     // Logic to identify and draw order blocks on the chart
-    // This will include providing insights about price behavior in those zones
     double orderBlockHigh = high[index];
     double orderBlockLow = low[index];
     
@@ -215,6 +214,13 @@ void DrawOrderBlocks(const int index,
                 Time[index + 1], orderBlockHigh);
     ObjectSetInteger(0, name, OBJPROP_COLOR, InpOrderBlockColor);
     ObjectSetInteger(0, name, OBJPROP_FILL, true);
+    
+    // Provide insights about price behavior in the order block
+    string insight = "Price may reverse or break in this zone due to market structure.";
+    ObjectCreate(0, name + "_Note", OBJ_TEXT, 0,
+                Time[index], orderBlockHigh);
+    ObjectSetString(0, name + "_Note", OBJPROP_TEXT, insight);
+    ObjectSetInteger(0, name + "_Note", OBJPROP_COLOR, clrWhite);
 }
 
 // Additional functions for detecting patterns and generating signals will be implemented here...
