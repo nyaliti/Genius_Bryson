@@ -28,7 +28,8 @@ enum ENUM_PATTERN_TYPE {
     PATTERN_TRIPLE_TOP,
     PATTERN_TRIPLE_BOTTOM,
     PATTERN_ROUNDING_BOTTOM,
-    PATTERN_CUP_HANDLE
+    PATTERN_CUP_HANDLE,
+    PATTERN_GAP
 };
 
 enum ENUM_CANDLESTICK_PATTERN {
@@ -221,6 +222,23 @@ void DrawOrderBlocks(const int index,
                 Time[index], orderBlockHigh);
     ObjectSetString(0, name + "_Note", OBJPROP_TEXT, insight);
     ObjectSetInteger(0, name + "_Note", OBJPROP_COLOR, clrWhite);
+}
+
+// Detect Patterns
+bool DetectPatterns(const int index, const int rates_total, const double &open[], const double &high[], const double &low[], const double &close[]) {
+    // Logic to identify various chart patterns
+    // Implement detection for flags, triangles, head and shoulders, etc.
+    return false; // Placeholder return
+}
+
+// Analyze Pattern
+void AnalyzePattern(const int index, const int rates_total, const double &open[], const double &high[], const double &low[], const double &close[]) {
+    // Logic to analyze detected patterns and generate signals
+}
+
+// Generate Trading Signals
+void GenerateSignals(const int index, const int rates_total, const double &open[], const double &high[], const double &low[], const double &close[]) {
+    // Logic to generate trading signals based on analysis
 }
 
 // Additional functions for detecting patterns and generating signals will be implemented here...
